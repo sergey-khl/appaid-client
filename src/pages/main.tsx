@@ -13,7 +13,8 @@ export default function Main() {
   const View = Components['View'];
   const SafeAreaView = Components['SafeAreaView'];
   const TouchableOpacity = Components['TouchableOpacity'];
-  const [component, setComponent] = useState(createElement(View, null));
+  const [gui, setGui] = useState(<></>);
+  const [component, setComponent] = useState(<></>);
   const [tree, setTree] = useState(createElement(TreeNode, {name: 'tree'}, null));
 
   // call server to get gpt output, if any
@@ -32,51 +33,76 @@ export default function Main() {
     });
   }
 
+
   // use gpt output to create and render component
   const updateEmulator = (component: any): void => {
     //console.log(component)
-    const [comp, accordion] = parseComponent(component.jsx);
+    const [comp, accordion, editMode] = parseComponent(component.jsx);
     //const comp = <TouchableOpacity style={{"backgroundColor": "black", width: 50, height: 50}} onPress={()=>{console.log('fdsasdf')}}></TouchableOpacity>
+    //const reactComponent = createComponent('View', {style:{justifyContent:"center", alignSelf: 'center', height: '100%', width: '100%'}, key: uuidv4()}, comp);
     const reactComponent = createElement(View, {style:{justifyContent:"center", alignSelf: 'center', height: '100%', width: '100%'}, key: uuidv4()}, comp);
     const componentTree = createElement(TreeNode, {name: "tree",key: uuidv4()}, accordion);
+    const guiComponent = createElement(View, {style:{justifyContent:"center", alignSelf: 'center', height: '100%', width: '100%'}, key: uuidv4()}, editMode);
+
     console.log(reactComponent)
     setComponent(reactComponent);
     setTree(componentTree);
+    setGui(guiComponent);
   }
 
   // DFS alphabetically on json to get the react component
   // TODO: ignore onPress, onHover, etc ...
-  const parseComponent = (jsonComponent: any): [React.ReactElement, React.ReactElement] => {
+  const parseComponent = (jsonComponent: any | any[]): [React.ReactElement, React.ReactElement, React.ReactElement] => {
     
+    // TODO: fix bahemothon
     if (jsonComponent.children.length == 0) {
-      return [createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()}), createElement(TreeLeaf, {name: jsonComponent.type,key: uuidv4()})];
+      const parentComponent:React.ReactElement = createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()});
+      const parentTree: React.ReactElement = createElement(TreeLeaf, {name: jsonComponent.type,key: uuidv4()});
+      const parentGui: React.ReactElement = <TouchableOpacity style={{flex: 1, borderWidth: 3}} key={uuidv4()} onPress={checkUntouchable}>
+        {createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()})}
+      </TouchableOpacity>
+      return [parentComponent, parentTree, parentGui];
     } else if (typeof jsonComponent.children == "string") {
-      return [createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()}, jsonComponent.children), createElement(TreeLeaf, {name: jsonComponent.type,key: uuidv4()})];
+      const parentComponent:React.ReactElement = createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()}, jsonComponent.children);
+      const parentTree: React.ReactElement = createElement(TreeLeaf, {name: jsonComponent.type,key: uuidv4()});
+      const parentGui: React.ReactElement = <TouchableOpacity style={{flex: 1, borderWidth: 3}} key={uuidv4()} onPress={checkUntouchable}>
+        {createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()}, jsonComponent.children)}
+      </TouchableOpacity>
+      return [parentComponent, parentTree, parentGui];
     }
 
     let childrenComponent:React.ReactElement[] = [];
     let childrenTree:React.ReactElement[] = [];
+    let childrenGui:React.ReactElement[] = [];
     const onPresss = (e) => {
       console.log('e')
     };
 
     jsonComponent.children.sort().forEach(child => {
-      const [compChild, treeChild] = parseComponent(child)
+      const [compChild, treeChild, guiChild] = parseComponent(child)
       childrenComponent.push(compChild);
       childrenTree.push(treeChild);
+      childrenGui.push(guiChild);
     });
     let parentComponent:React.ReactElement;
 
     if (Components[jsonComponent.type] == TouchableOpacity) {
       
-      parentComponent = <TouchableOpacity {...jsonComponent.props} key={uuidv4()} onPress={()=>{console.log('aaa')}}>{childrenComponent}</TouchableOpacity>
-    }else {
+      parentComponent = <TouchableOpacity {...jsonComponent.props} key={uuidv4()} onPress={checkUntouchable}>{childrenComponent}</TouchableOpacity>
+      //parentComponent = createComponent('TouchableOpacity', {style:{view: 1, borderWidth: 3}, onPress:{checkUntouchable}, key: uuidv4()}, childrenComponent)
+    } else {
       parentComponent = createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()}, childrenComponent);
+      //parentComponent = createComponent(jsonComponent.type, {style:{view: 1, borderWidth: 3}, key: uuidv4()}, childrenComponent)
     }
 
     let parentTree = createElement(TreeNode, {name: jsonComponent.type, key: uuidv4()}, childrenTree);
 
-    return [parentComponent, parentTree];
+    //let parentGui = createComponent('TouchableOpacity', {style:{view: 1, borderWidth: 3}, key: uuidv4()}, childrenGui)
+    let parentGui = <TouchableOpacity style={{flex: 1, borderWidth: 3, opacity:0.3}} key={uuidv4()}>
+      {childrenGui}
+    </TouchableOpacity>
+
+    return [parentComponent, parentTree, parentGui];
   }
 
 
@@ -87,6 +113,11 @@ export default function Main() {
       </View>
       <View style={styles.section}>
         <GenComponent getComponent={getComponent}></GenComponent>
+      </View>
+      <View style={styles.section}>
+        <View style={styles.phoneContainer}>
+            <Emulator>{gui}</Emulator>
+        </View>
       </View>
       <View style={styles.section}>
         <View style={styles.phoneContainer}>
@@ -120,4 +151,9 @@ const styles = Components['StyleSheet'].create({
     borderColor: 'black',
     
   },
+  selector: {
+    flex: 1,
+    borderColor: 'green',
+    borderWidth: 3,
+  }
 });

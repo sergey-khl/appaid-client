@@ -6,11 +6,13 @@ import TreeLeaf from '../components/tree-leaf';
 import TreeNode from '../components/tree-node';
 import ComponentTree from '../components/component-tree';
 import { v4 as uuidv4 } from 'uuid';
+import { checkUntouchable } from '../utils/utils';
 
 
 export default function Main() {
   const View = Components['View'];
   const SafeAreaView = Components['SafeAreaView'];
+  const TouchableOpacity = Components['TouchableOpacity'];
   const [component, setComponent] = useState(createElement(View, null));
   const [tree, setTree] = useState(createElement(TreeNode, {name: 'tree'}, null));
 
@@ -34,9 +36,10 @@ export default function Main() {
   const updateEmulator = (component: any): void => {
     //console.log(component)
     const [comp, accordion] = parseComponent(component.jsx);
+    //const comp = <TouchableOpacity style={{"backgroundColor": "black", width: 50, height: 50}} onPress={()=>{console.log('fdsasdf')}}></TouchableOpacity>
     const reactComponent = createElement(View, {style:{justifyContent:"center", alignSelf: 'center', height: '100%', width: '100%'}, key: uuidv4()}, comp);
     const componentTree = createElement(TreeNode, {name: "tree",key: uuidv4()}, accordion);
-
+    console.log(reactComponent)
     setComponent(reactComponent);
     setTree(componentTree);
   }
@@ -53,13 +56,27 @@ export default function Main() {
 
     let childrenComponent:React.ReactElement[] = [];
     let childrenTree:React.ReactElement[] = [];
+    const onPresss = (e) => {
+      console.log('e')
+    };
 
     jsonComponent.children.sort().forEach(child => {
       const [compChild, treeChild] = parseComponent(child)
       childrenComponent.push(compChild);
       childrenTree.push(treeChild);
     });
-    return [createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()}, childrenComponent), createElement(TreeNode, {name: jsonComponent.type, key: uuidv4()}, childrenTree)];
+    let parentComponent:React.ReactElement;
+
+    if (Components[jsonComponent.type] == TouchableOpacity) {
+      
+      parentComponent = <TouchableOpacity {...jsonComponent.props} key={uuidv4()} onPress={()=>{console.log('aaa')}}>{childrenComponent}</TouchableOpacity>
+    }else {
+      parentComponent = createElement(Components[jsonComponent.type], {...jsonComponent.props, key: uuidv4()}, childrenComponent);
+    }
+
+    let parentTree = createElement(TreeNode, {name: jsonComponent.type, key: uuidv4()}, childrenTree);
+
+    return [parentComponent, parentTree];
   }
 
 

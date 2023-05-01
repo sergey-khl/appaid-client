@@ -12,6 +12,7 @@ export default function Main() {
   const View = Components["View"];
   const SafeAreaView = Components["SafeAreaView"];
   const TouchableOpacity = Components["TouchableOpacity"];
+  const Pressable = Components["Pressable"];
   const [componentJson, setComponentJson] = useState({});
   const [gui, setGui] = useState(<></>);
   const [component, setComponent] = useState(<></>);
@@ -19,16 +20,17 @@ export default function Main() {
     createElement(TreeNode, { name: "tree" }, null)
   );
   const [compStyles, setCompStyles] = useState({});
+  const [selected, setSelected] = useState('root');
 
 
   useEffect(() => {
     try {
-      console.log(compStyles)
+      console.log(compStyles, selected)
       updateEmulator(componentJson);
     } catch {
       console.log('no usable json');
     }
-  }, [compStyles, componentJson]);
+  }, [compStyles, componentJson, selected]);
 
 
   // call server to get gpt output, if any
@@ -88,7 +90,7 @@ export default function Main() {
       </View>
     );
 
-    console.log(reactComponent);
+    console.log(guiComponent);
     setComponent(reactComponent);
     setTree(componentTree);
     setGui(guiComponent);
@@ -110,7 +112,7 @@ export default function Main() {
               Components[jsonComponent.type],
               { ...jsonComponent.props, key: compID, onLayout: (e) => {
                 compStyles[compID] = e.nativeEvent.layout
-                console.log(e);
+                console.log(e, compID);
                 
                 setCompStyles({...compStyles});
               }} 
@@ -129,13 +131,13 @@ export default function Main() {
               {createElement(
                 Components[jsonComponent.type],
                 { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, key: compID, disabled: true })}
-              <TouchableOpacity
+              <Pressable
                 style={{borderWidth: 2,
                       position: 'absolute', 
                       width:compStyles[compID].width, 
                       height: compStyles[compID].height}}>
   
-              </TouchableOpacity>
+              </Pressable>
             </>}
           </View>
       );
@@ -148,7 +150,7 @@ export default function Main() {
               Components[jsonComponent.type],
               { ...jsonComponent.props, key: compID, onLayout: (e) => {
                 compStyles[compID] = e.nativeEvent.layout
-                console.log(e);
+                console.log(e, compID);
                 
                 setCompStyles({...compStyles});
               }},
@@ -160,6 +162,7 @@ export default function Main() {
         name: jsonComponent.type,
         key: uuidv4(),
       });
+
       const parentGui: React.ReactElement = (
         <View
           key={compID}>
@@ -170,13 +173,16 @@ export default function Main() {
                 { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, key: compID, disabled: true },
                 jsonComponent.children
               )}
-              <TouchableOpacity
-                style={{borderWidth: 2,
-                      position: 'absolute', 
+              <Pressable
+                style={[{position: 'absolute', 
                       width:compStyles[compID].width, 
-                      height: compStyles[compID].height}}>
+                      height: compStyles[compID].height}, selected == compID ? {borderWidth: 2} : {borderWidth: 2}]}
+                onPress={(e) => {
+                    console.log(e)
+                    setSelected(compID)
+                  }}>
   
-              </TouchableOpacity>
+              </Pressable>
             </>}
           </View>
       );
@@ -239,13 +245,16 @@ export default function Main() {
               { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, key: compID, disabled: true },
               childrenGui
             )}
-            <TouchableOpacity
-              style={{borderWidth: 2,
-                    position: 'absolute', 
-                    width:compStyles[compID].width, 
-                    height: compStyles[compID].height}}>
+            <Pressable
+              style={[{position: 'absolute', 
+                width:compStyles[compID].width, 
+                height: compStyles[compID].height}, selected == compID ? {borderWidth: 2} : {borderWidth: 0}]}
+              onPress={(e) => {
+                      console.log(e)
+                      //setSelected(compID)
+                      }}>
 
-            </TouchableOpacity>
+            </Pressable>
           </>}
         </View>
     );

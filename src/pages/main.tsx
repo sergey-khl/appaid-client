@@ -1,4 +1,4 @@
-import React, { FC, useState, createElement, useEffect } from "react";
+import React, { FC, useState, createElement, useEffect, useRef } from "react";
 import * as Components from "react-native";
 import Emulator from "../components/emulator";
 import GenComponent from "../components/gen-component";
@@ -57,6 +57,7 @@ export default function Main() {
       <View
         onLayout={(e) => {
           compStyles[compID] = e.nativeEvent.layout
+          console.log(e);
           setCompStyles({...compStyles});
         }}
         style= {{
@@ -76,10 +77,6 @@ export default function Main() {
     );
     const guiComponent = (
       <View
-        onLayout={(e) => {
-          compStyles[compID] = e.nativeEvent.layout
-          setCompStyles({...compStyles});
-        }}
         style= {{
           justifyContent: "center",
           alignSelf: "center",
@@ -107,10 +104,16 @@ export default function Main() {
     if (jsonComponent.children.length == 0) {
       const parentComponent: React.ReactElement = (
         <View
-          key={compID}>
+          key={compID}
+          >
             {createElement(
               Components[jsonComponent.type],
-              { ...jsonComponent.props, key: compID }
+              { ...jsonComponent.props, key: compID, onLayout: (e) => {
+                compStyles[compID] = e.nativeEvent.layout
+                console.log(e);
+                
+                setCompStyles({...compStyles});
+              }} 
             )}
         </View>
       );
@@ -120,24 +123,21 @@ export default function Main() {
       });
       const parentGui: React.ReactElement = (
         <View
-          onLayout={(e) => {
-            compStyles[compID] = e.nativeEvent.layout
-            setCompStyles({...compStyles});
-          }}
           key={compID}>
-            {createElement(
-              Components[jsonComponent.type],
-              { ...jsonComponent.props, key: compID, disabled: true }
-            )}
-            {compStyles[compID] != undefined && 
+            {compStyles[compID] != undefined && <>
+  
+              {createElement(
+                Components[jsonComponent.type],
+                { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, key: compID, disabled: true })}
               <TouchableOpacity
-                style={{borderWidth: 3,
+                style={{borderWidth: 2,
                       position: 'absolute', 
                       width:compStyles[compID].width, 
                       height: compStyles[compID].height}}>
-
-              </TouchableOpacity>}
-        </View>
+  
+              </TouchableOpacity>
+            </>}
+          </View>
       );
       return [parentComponent, parentTree, parentGui];
     } else if (typeof jsonComponent.children == "string") {
@@ -146,7 +146,12 @@ export default function Main() {
           key={compID}>
             {createElement(
               Components[jsonComponent.type],
-              { ...jsonComponent.props, key: compID },
+              { ...jsonComponent.props, key: compID, onLayout: (e) => {
+                compStyles[compID] = e.nativeEvent.layout
+                console.log(e);
+                
+                setCompStyles({...compStyles});
+              }},
               jsonComponent.children
             )}
         </View>
@@ -157,25 +162,23 @@ export default function Main() {
       });
       const parentGui: React.ReactElement = (
         <View
-          onLayout={(e) => {
-            compStyles[compID] = e.nativeEvent.layout
-            setCompStyles({...compStyles});
-          }}
           key={compID}>
-            {createElement(
-              Components[jsonComponent.type],
-              { ...jsonComponent.props, key: compID, disabled: true},
-              jsonComponent.children
-            )}
-            {compStyles[compID] != undefined && 
+            {compStyles[compID] != undefined && <>
+  
+              {createElement(
+                Components[jsonComponent.type],
+                { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, key: compID, disabled: true },
+                jsonComponent.children
+              )}
               <TouchableOpacity
-                style={{borderWidth: 3,
+                style={{borderWidth: 2,
                       position: 'absolute', 
                       width:compStyles[compID].width, 
                       height: compStyles[compID].height}}>
-
-              </TouchableOpacity>}
-        </View>
+  
+              </TouchableOpacity>
+            </>}
+          </View>
       );
       
       return [parentComponent, parentTree, parentGui];
@@ -209,7 +212,10 @@ export default function Main() {
         key={compID}>
           {createElement(
             Components[jsonComponent.type],
-            { ...jsonComponent.props, key: compID},
+            { ...jsonComponent.props, key: compID, onLayout: (e) => {
+              compStyles[compID] = e.nativeEvent.layout
+              setCompStyles({...compStyles});
+            }},
             childrenComponent
           )}
         </View>
@@ -222,26 +228,25 @@ export default function Main() {
       childrenTree
     );
 
+    // might have to do some flex: undefined
     let parentGui = (
       <View
-        onLayout={(e) => {
-          compStyles[compID] = e.nativeEvent.layout
-          setCompStyles({...compStyles});
-        }}
         key={compID}>
-          {createElement(
-            Components[jsonComponent.type],
-            { ...jsonComponent.props, key: compID, disabled: true },
-            childrenGui
-          )}
-          {compStyles[compID] != undefined && 
-          <TouchableOpacity
-            style={{borderWidth: 3,
-                  position: 'absolute', 
-                  width:compStyles[compID].width, 
-                  height: compStyles[compID].height}}>
+          {compStyles[compID] != undefined && <>
 
-          </TouchableOpacity>}
+            {createElement(
+              Components[jsonComponent.type],
+              { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, key: compID, disabled: true },
+              childrenGui
+            )}
+            <TouchableOpacity
+              style={{borderWidth: 2,
+                    position: 'absolute', 
+                    width:compStyles[compID].width, 
+                    height: compStyles[compID].height}}>
+
+            </TouchableOpacity>
+          </>}
         </View>
     );
 

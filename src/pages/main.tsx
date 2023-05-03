@@ -5,11 +5,12 @@ import GenComponent from "../components/gen-component";
 import TreeLeaf from "../components/tree-leaf";
 import TreeNode from "../components/tree-node";
 import ComponentTree from "../components/component-tree";
+import Selector from "../components/selector";
 import { v4 as uuidv4 } from "uuid";
 import { checkUntouchable, overlapElement } from "../utils/utils";
+import styles from '../styles/styles';
 
 export default function Main() {
-  const Text = Components["Text"];
   const View = Components["View"];
   const SafeAreaView = Components["SafeAreaView"];
   const TouchableOpacity = Components["TouchableOpacity"];
@@ -20,16 +21,16 @@ export default function Main() {
     createElement(TreeNode, { name: "tree" }, null)
   );
   const [compStyles, setCompStyles] = useState({});
-
+  const [selected, setSelected] = useState('root')
 
   useEffect(() => {
     try {
-      console.log(compStyles)
+      console.log(compStyles);
       updateEmulator(componentJson);
     } catch {
-      console.log('no usable json');
+      console.log("no usable json");
     }
-  }, [compStyles, componentJson]);
+  }, [compStyles, componentJson, selected]);
 
 
   // call server to get gpt output, if any
@@ -50,24 +51,22 @@ export default function Main() {
   // use gpt output to create and render component
   const updateEmulator = (component: any): void => {
     // gotta change prob to make more general
-    const compID = 'root';
+    const compID = "root";
     const [comp, accordion, editMode] = parseComponent(component.jsx, compID);
     //const comp = <TouchableOpacity style={{"backgroundColor": "black", width: 50, height: 50}} onPress={()=>{console.log('fdsasdf')}}></TouchableOpacity>
     //const reactComponent = createComponent('View', {style:{justifyContent:"center", alignSelf: 'center', height: '100%', width: '100%'}, key: uuidv4()}, comp);
     const reactComponent = (
       <View
         onLayout={(e) => {
-          compStyles[compID] = e.nativeEvent.layout
+          compStyles[compID] = e.nativeEvent.layout;
           console.log(e);
-          setCompStyles({...compStyles});
+          setCompStyles({ ...compStyles });
         }}
-        style= {{
-          justifyContent: "center",
-          alignSelf: "center",
-          height: "100%",
-          width: "100%",
+        style={{
+          flex:1,
         }}
-        key={compID}>
+        key={compID}
+      >
         {comp}
       </View>
     );
@@ -76,17 +75,11 @@ export default function Main() {
       { name: "tree", key: uuidv4() },
       accordion
     );
+
     const guiComponent = (
-      <View
-        style= {{
-          justifyContent: "center",
-          alignSelf: "center",
-          height: "100%",
-          width: "100%",
-        }}
-        key={compID}>
+      <Selector uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
         {editMode}
-      </View>
+      </Selector>
     );
 
     console.log(reactComponent);
@@ -98,7 +91,8 @@ export default function Main() {
   // DFS alphabetically on json to get the react component
   // TODO: ignore onPress, onHover, etc ...
   const parseComponent = (
-    jsonComponent: any | any[], parentID: string
+    jsonComponent: any | any[],
+    parentID: string
   ): [React.ReactElement, React.ReactElement, React.ReactElement] => {
     const compID = jsonComponent.uid;
     // TODO: fix bahemothon
@@ -107,40 +101,42 @@ export default function Main() {
         <View
           key={compID}
           style={{
-            position: 'absolute'}}
-          >
-            {createElement(
-              Components[jsonComponent.type],
-              { ...jsonComponent.props, key: compID, onLayout: (e) => {
-                compStyles[compID] = e.nativeEvent.layout
-                console.log(e);
-                
-                setCompStyles({...compStyles});
-              }} 
-            )}
+            position: "absolute",
+          }}
+        >
+          {createElement(Components[jsonComponent.type], {
+            ...jsonComponent.props,
+            key: compID,
+            onLayout: (e) => {
+              compStyles[compID] = e.nativeEvent.layout;
+
+              setCompStyles({ ...compStyles });
+            },
+          })}
         </View>
       );
       const parentTree: React.ReactElement = createElement(TreeLeaf, {
         name: jsonComponent.type,
-        key: uuidv4(),
+        key: compID,
       });
+
       const parentGui: React.ReactElement = (
-        <View
-          key={compID}>
-            {compStyles[compID] != undefined && <>
-  
-              {createElement(
-                Components[jsonComponent.type],
-                { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, key: compID, disabled: true })}
-              <TouchableOpacity
-                style={{borderWidth: 2,
-                      position: 'absolute', 
-                      width:compStyles[compID].width, 
-                      height: compStyles[compID].height}}>
-  
-              </TouchableOpacity>
-            </>}
-          </View>
+        <Selector uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
+          {compStyles[compID] != undefined && (
+              createElement(Components[jsonComponent.type], {
+                ...jsonComponent.props,
+                style: {
+                  ...jsonComponent.props.style,
+                  ...{
+                    width: compStyles[compID].width,
+                    height: compStyles[compID].height,
+                    flex: undefined,
+                  },
+                },
+                key: compID,
+              })
+          )}
+        </Selector>
       );
       return [parentComponent, parentTree, parentGui];
     } else if (typeof jsonComponent.children == "string") {
@@ -148,38 +144,48 @@ export default function Main() {
         <View
           key={compID}
           style={{
-            position: 'absolute'}}>
-            {createElement(
-              Components[jsonComponent.type],
-              { ...jsonComponent.props, key: compID, onLayout: (e) => {
-                compStyles[compID] = e.nativeEvent.layout
-                console.log(e);
-                
-                setCompStyles({...compStyles});
-              }},
-              jsonComponent.children
-            )}
+            position: "absolute",
+          }}>
+          {createElement(
+            Components[jsonComponent.type],
+            {
+              ...jsonComponent.props,
+              key: compID,
+              onLayout: (e) => {
+                compStyles[compID] = e.nativeEvent.layout;
+
+                setCompStyles({ ...compStyles });
+              },
+            },
+            jsonComponent.children
+          )}
         </View>
       );
       const parentTree: React.ReactElement = createElement(TreeLeaf, {
         name: jsonComponent.type,
-        key: uuidv4(),
+        key: compID,
       });
+
       const parentGui: React.ReactElement = (
-        compStyles[compID] != undefined && <TouchableOpacity
-          key={compID}
-          style={{borderWidth: 20,
-            left: -20,
-            position: 'absolute'}} onPress={()=>console.log('fuisdbuf')}>
-  
-              {createElement(
-                Components[jsonComponent.type],
-                { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, key: compID },
-                jsonComponent.children
-              )}
-          </TouchableOpacity>
+        <Selector uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
+          {compStyles[compID] != undefined && (
+              createElement(Components[jsonComponent.type], {
+                ...jsonComponent.props,
+                style: {
+                  ...jsonComponent.props.style,
+                  ...{
+                    width: compStyles[compID].width,
+                    height: compStyles[compID].height,
+                    flex: undefined,
+                  },
+                },
+                key: compID,
+              },
+              jsonComponent.children)
+          )}
+        </Selector>
       );
-      
+
       return [parentComponent, parentTree, parentGui];
     }
 
@@ -195,61 +201,50 @@ export default function Main() {
     });
     let parentComponent: React.ReactElement;
 
-    // if (Components[jsonComponent.type] == TouchableOpacity) {
-    //   parentComponent = (
-    //     <TouchableOpacity
-    //       {...jsonComponent.props}
-    //       key={compID}
-    //       onPress={checkUntouchable}
-    //     >
-    //       {childrenComponent}
-    //     </TouchableOpacity>
-    //   );
-    // } else {
     parentComponent = (
-      <View
-        key={compID}>
-          {createElement(
-            Components[jsonComponent.type],
-            { ...jsonComponent.props, key: compID, onLayout: (e) => {
-              compStyles[compID] = e.nativeEvent.layout
-              setCompStyles({...compStyles});
-            }},
-            childrenComponent
-          )}
-        </View>
+      <View key={compID} style={{position: 'absolute'}}>
+        {createElement(
+          Components[jsonComponent.type],
+          {
+            ...jsonComponent.props,
+            key: compID,
+            onLayout: (e) => {
+              compStyles[compID] = e.nativeEvent.layout;
+              setCompStyles({ ...compStyles });
+            },
+          },
+          childrenComponent
+        )}
+      </View>
     );
-    //}
 
     let parentTree = createElement(
       TreeNode,
-      { name: jsonComponent.type, key: uuidv4() },
+      { name: jsonComponent.type, key: compID },
       childrenTree
     );
 
     // might have to do some flex: undefined
     let parentGui = (
-      compStyles[compID] != undefined && <TouchableOpacity
-        key={compID}
-        style={{borderWidth: 1,
-          left: -1,
-          position: 'absolute'}} onPress={()=>console.log('eee')}>
-
-            {createElement(
-              TouchableOpacity,
-              { ...jsonComponent.props, style:{...jsonComponent.props.style, ...{width:compStyles[compID].width, height: compStyles[compID].height, flex: undefined}}, disabled:true, key: compID },
-              childrenGui
-            )}
-        </TouchableOpacity>
+      <Selector uid={compID} selected={selected} setSelected={()=>{console.log(compID);setSelected(compID)}}>
+        {compStyles[compID] != undefined && (
+          // TODO: extend for any element
+            createElement(View, {
+              ...jsonComponent.props,
+              style: {
+                ...jsonComponent.props.style,
+                ...{
+                  width: compStyles[compID].width,
+                  height: compStyles[compID].height,
+                  flex: undefined,
+                },
+              },
+              key: compID,
+            },
+            childrenGui)
+        )}
+      </Selector>
     );
-
-    // parentGui = (
-    //   <TouchableOpacity style={{backgroundColor: 'yellow', height: 60, width: 60, left: -5, borderWidth: 5}}>
-    //     <Text>
-    //       oi
-    //     </Text>
-    //   </TouchableOpacity>
-    // );
 
     return [parentComponent, parentTree, parentGui];
   };
@@ -276,30 +271,3 @@ export default function Main() {
   );
 }
 
-const styles = Components["StyleSheet"].create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignContent: "space-around",
-    justifyContent: "space-around",
-    flexDirection: "row",
-    zIndex: 1,
-  },
-  section: {
-    flex: 1,
-  },
-  phoneContainer: {
-    // iphone 8, 7, 6, SE
-    overflow: "hidden",
-    width: "50%",
-    aspectRatio: 0.56,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "black",
-  },
-  selector: {
-    flex: 1,
-    borderColor: "green",
-    borderWidth: 3,
-  },
-});

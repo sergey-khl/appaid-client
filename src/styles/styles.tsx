@@ -11,12 +11,13 @@ export default StyleSheet.create({
     },
     section: {
         flex: 1,
+        flexDirection: "row",
     },
     phoneContainer: {
         // iphone 8, 7, 6, SE
         overflow: "hidden",
-        width: "50%",
-        aspectRatio: 0.56,
+        width: "60%",
+        aspectRatio: 0.5,
         backgroundColor: "#fff",
         borderWidth: 1,
         borderColor: "black",

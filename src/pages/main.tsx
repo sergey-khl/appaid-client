@@ -6,7 +6,7 @@ import TreeLeaf from "../components/tree-leaf";
 import TreeNode from "../components/tree-node";
 import ComponentTree from "../components/component-tree";
 import Selector from "../components/selector";
-import { v4 as uuidv4 } from "uuid";
+import Editor from "../components/editor";
 import { checkUntouchable, overlapElement } from "../utils/utils";
 import styles from '../styles/styles';
 
@@ -25,7 +25,6 @@ export default function Main() {
 
   useEffect(() => {
     try {
-      console.log(compStyles);
       updateEmulator(componentJson);
     } catch {
       console.log("no usable json");
@@ -59,7 +58,6 @@ export default function Main() {
       <View
         onLayout={(e) => {
           compStyles[compID] = e.nativeEvent.layout;
-          console.log(e);
           setCompStyles({ ...compStyles });
         }}
         style={{
@@ -72,17 +70,17 @@ export default function Main() {
     );
     const componentTree = createElement(
       TreeNode,
-      { name: "tree", key: uuidv4() },
+      { name: "tree", key: compID },
       accordion
     );
 
     const guiComponent = (
-      <Selector uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
+      <Selector key={compID} uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
         {editMode}
       </Selector>
     );
 
-    console.log(reactComponent);
+    console.log(guiComponent);
     setComponent(reactComponent);
     setTree(componentTree);
     setGui(guiComponent);
@@ -121,7 +119,7 @@ export default function Main() {
       });
 
       const parentGui: React.ReactElement = (
-        <Selector uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
+        <Selector key={compID} uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
           {compStyles[compID] != undefined && (
               createElement(Components[jsonComponent.type], {
                 ...jsonComponent.props,
@@ -167,7 +165,7 @@ export default function Main() {
       });
 
       const parentGui: React.ReactElement = (
-        <Selector uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
+        <Selector key={compID} uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
           {compStyles[compID] != undefined && (
               createElement(Components[jsonComponent.type], {
                 ...jsonComponent.props,
@@ -226,7 +224,7 @@ export default function Main() {
 
     // might have to do some flex: undefined
     let parentGui = (
-      <Selector uid={compID} selected={selected} setSelected={()=>{console.log(compID);setSelected(compID)}}>
+      <Selector key={compID} uid={compID} selected={selected} setSelected={()=>{setSelected(compID)}}>
         {compStyles[compID] != undefined && (
           // TODO: extend for any element
             createElement(View, {
@@ -249,6 +247,13 @@ export default function Main() {
     return [parentComponent, parentTree, parentGui];
   };
 
+  const updateCompStyles = (width: number, height: number) => {
+    console.log(width)
+    compStyles[selected].width = width;
+    compStyles[selected].height = height;
+    setCompStyles(compStyles);
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.section}>
@@ -258,6 +263,7 @@ export default function Main() {
         <GenComponent getComponent={getComponent}></GenComponent>
       </View>
       <View style={styles.section}>
+        <Editor selected={selected} compStyles={compStyles} updateStyles={updateCompStyles}></Editor>
         <View style={styles.phoneContainer}>
           <Emulator>{gui}</Emulator>
         </View>

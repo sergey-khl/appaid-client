@@ -1,5 +1,8 @@
 import { StyleSheet } from "react-native";
 
+export const editWidth = 1;
+export const phoneWidth = 0;
+
 export default StyleSheet.create({
     container: {
         flex: 1,
@@ -7,23 +10,37 @@ export default StyleSheet.create({
         alignContent: "space-around",
         justifyContent: "space-around",
         flexDirection: "row",
-        zIndex: 1,
     },
     section: {
         flex: 1,
+        padding: 10,
         flexDirection: "row",
+    },
+    phone: {
+        backgroundColor: 'black',
+        height: "60%",
+        minWidth: 250,
+        minHeight: 450,
+        aspectRatio: 0.3,
+        justifyContent: "center",
+        alignItems: "center"
     },
     phoneContainer: {
         // iphone 8, 7, 6, SE
         overflow: "hidden",
-        width: "60%",
-        aspectRatio: 0.5,
+        //width: "60%",
+        height: "50%",
+        minWidth: 200 + phoneWidth*2,
+        minHeight: 400 + phoneWidth*2,
+        aspectRatio: 0.56,
+        margin: -phoneWidth,
         backgroundColor: "#fff",
-        borderWidth: 1,
+        borderWidth: phoneWidth,
         borderColor: "black",
+        
     },
     selector: {
-        borderWidth: 1, 
+        borderWidth: editWidth,
         borderColor: "blue",
     },
   });

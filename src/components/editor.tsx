@@ -48,7 +48,6 @@ const Editor: FC<EditorProps> = (props) => {
       props.updateStyles(width, height);
     }
   }, [width, height]);
-
   return (
     props.compStyles[props.selected] != undefined && (
       <View>

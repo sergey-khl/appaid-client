@@ -8,7 +8,7 @@ import ComponentTree from "../components/component-tree";
 import Selector from "../components/selector";
 import Editor from "../components/editor";
 import { checkUntouchable, overlapElement } from "../utils/utils";
-import styles from '../styles/styles';
+import styles, { editWidth } from '../styles/styles';
 
 export default function Main() {
   const View = Components["View"];
@@ -24,7 +24,8 @@ export default function Main() {
   const [selected, setSelected] = useState('root')
 
   useEffect(() => {
-    try {
+    try { 
+      console.log(compStyles)
       updateEmulator(componentJson);
     } catch {
       console.log("no usable json");
@@ -61,7 +62,8 @@ export default function Main() {
           setCompStyles({ ...compStyles });
         }}
         style={{
-          flex:1,
+          width: "100%",
+          height: "100%"
         }}
         key={compID}
       >
@@ -75,12 +77,13 @@ export default function Main() {
     );
 
     const guiComponent = (
-      <Selector key={compID} uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
+      compStyles[compID]!= undefined &&
+      <Selector key={compID} uid={compID} selected={selected} compStyles={compStyles} setSelected={()=>setSelected(compID)}>
         {editMode}
       </Selector>
     );
 
-    console.log(guiComponent);
+    // console.log(guiComponent);
     setComponent(reactComponent);
     setTree(componentTree);
     setGui(guiComponent);
@@ -96,22 +99,15 @@ export default function Main() {
     // TODO: fix bahemothon
     if (jsonComponent.children.length == 0) {
       const parentComponent: React.ReactElement = (
-        <View
-          key={compID}
-          style={{
-            position: "absolute",
-          }}
-        >
-          {createElement(Components[jsonComponent.type], {
+          createElement(Components[jsonComponent.type], {
             ...jsonComponent.props,
             key: compID,
-            onLayout: (e) => {
+            onLayout:(e) => {
               compStyles[compID] = e.nativeEvent.layout;
-
+  
               setCompStyles({ ...compStyles });
-            },
-          })}
-        </View>
+            }
+          })
       );
       const parentTree: React.ReactElement = createElement(TreeLeaf, {
         name: jsonComponent.type,
@@ -119,45 +115,41 @@ export default function Main() {
       });
 
       const parentGui: React.ReactElement = (
-        <Selector key={compID} uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
-          {compStyles[compID] != undefined && (
-              createElement(Components[jsonComponent.type], {
+        compStyles[compID]!= undefined &&
+        <Selector key={compID} compStyles={compStyles} uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
+              {createElement(Components[jsonComponent.type], {
                 ...jsonComponent.props,
                 style: {
                   ...jsonComponent.props.style,
                   ...{
                     width: compStyles[compID].width,
                     height: compStyles[compID].height,
+                    top: 0,
+                    left: 0,
                     flex: undefined,
                   },
                 },
                 key: compID,
               })
-          )}
+          }
         </Selector>
       );
       return [parentComponent, parentTree, parentGui];
     } else if (typeof jsonComponent.children == "string") {
       const parentComponent: React.ReactElement = (
-        <View
-          key={compID}
-          style={{
-            position: "absolute",
-          }}>
-          {createElement(
-            Components[jsonComponent.type],
-            {
-              ...jsonComponent.props,
-              key: compID,
-              onLayout: (e) => {
-                compStyles[compID] = e.nativeEvent.layout;
+        createElement(
+          Components[jsonComponent.type],
+          {
+            ...jsonComponent.props,
+            key: compID,
+            onLayout:(e) => {
+            compStyles[compID] = e.nativeEvent.layout;
 
-                setCompStyles({ ...compStyles });
-              },
-            },
-            jsonComponent.children
-          )}
-        </View>
+            setCompStyles({ ...compStyles });
+          }
+          },
+          jsonComponent.children
+        )
       );
       const parentTree: React.ReactElement = createElement(TreeLeaf, {
         name: jsonComponent.type,
@@ -165,22 +157,24 @@ export default function Main() {
       });
 
       const parentGui: React.ReactElement = (
-        <Selector key={compID} uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
-          {compStyles[compID] != undefined && (
-              createElement(Components[jsonComponent.type], {
+        compStyles[compID]!= undefined &&
+        <Selector compStyles={compStyles} key={compID} uid={compID} selected={selected} setSelected={()=>setSelected(compID)}>
+              {createElement(Components[jsonComponent.type], {
                 ...jsonComponent.props,
                 style: {
                   ...jsonComponent.props.style,
                   ...{
                     width: compStyles[compID].width,
                     height: compStyles[compID].height,
+                    top: -200,
+                    left: 0,
                     flex: undefined,
                   },
                 },
                 key: compID,
               },
               jsonComponent.children)
-          )}
+          }
         </Selector>
       );
 
@@ -200,20 +194,18 @@ export default function Main() {
     let parentComponent: React.ReactElement;
 
     parentComponent = (
-      <View key={compID} style={{position: 'absolute'}}>
-        {createElement(
-          Components[jsonComponent.type],
-          {
-            ...jsonComponent.props,
-            key: compID,
-            onLayout: (e) => {
-              compStyles[compID] = e.nativeEvent.layout;
-              setCompStyles({ ...compStyles });
-            },
-          },
-          childrenComponent
-        )}
-      </View>
+      createElement(
+        Components[jsonComponent.type],
+        {
+          ...jsonComponent.props,
+          key: compID,
+          onLayout:(e) => {
+            compStyles[compID] = e.nativeEvent.layout;
+            setCompStyles({ ...compStyles });
+          }
+        },
+        childrenComponent
+      )
     );
 
     let parentTree = createElement(
@@ -223,24 +215,27 @@ export default function Main() {
     );
 
     // might have to do some flex: undefined
+
+    // TODO: extend for any element
     let parentGui = (
-      <Selector key={compID} uid={compID} selected={selected} setSelected={()=>{setSelected(compID)}}>
-        {compStyles[compID] != undefined && (
-          // TODO: extend for any element
-            createElement(View, {
+      compStyles[compID]!= undefined &&
+      <Selector compStyles={compStyles} key={compID} uid={compID} selected={selected} setSelected={()=>{setSelected(compID)}}>
+            {createElement(View, {
               ...jsonComponent.props,
               style: {
                 ...jsonComponent.props.style,
                 ...{
                   width: compStyles[compID].width,
                   height: compStyles[compID].height,
+                  top: 0,
+                  left: 0,
                   flex: undefined,
                 },
               },
               key: compID,
             },
             childrenGui)
-        )}
+        }
       </Selector>
     );
 
@@ -248,10 +243,10 @@ export default function Main() {
   };
 
   const updateCompStyles = (width: number, height: number) => {
-    console.log(width)
     compStyles[selected].width = width;
     compStyles[selected].height = height;
     setCompStyles(compStyles);
+    console.log(compStyles);
   }
 
   return (
@@ -264,13 +259,17 @@ export default function Main() {
       </View>
       <View style={styles.section}>
         <Editor selected={selected} compStyles={compStyles} updateStyles={updateCompStyles}></Editor>
-        <View style={styles.phoneContainer}>
-          <Emulator>{gui}</Emulator>
+        <View style={styles.phone}>
+          <View style={styles.phoneContainer}>
+            <Emulator>{gui}</Emulator>
+          </View>
         </View>
       </View>
       <View style={styles.section}>
-        <View style={styles.phoneContainer}>
-          <Emulator>{component}</Emulator>
+        <View style={styles.phone}>
+          <View style={styles.phoneContainer}>
+            <Emulator>{component}</Emulator>
+          </View>
         </View>
       </View>
     </SafeAreaView>

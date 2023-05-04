@@ -101,6 +101,16 @@ export default function Main() {
       const parentComponent: React.ReactElement = (
           createElement(Components[jsonComponent.type], {
             ...jsonComponent.props,
+            style: compStyles[compID] != undefined ? {
+              ...jsonComponent.props.style,
+              ...{
+                width: compStyles[compID].width,
+                height: compStyles[compID].height,
+                top: 0,
+                left: 0,
+                flex: undefined,
+              },
+            } : {...jsonComponent.props.style},
             key: compID,
             onLayout:(e) => {
               compStyles[compID] = e.nativeEvent.layout;
@@ -124,8 +134,6 @@ export default function Main() {
                   ...{
                     width: compStyles[compID].width,
                     height: compStyles[compID].height,
-                    top: 0,
-                    left: 0,
                     flex: undefined,
                   },
                 },
@@ -141,6 +149,14 @@ export default function Main() {
           Components[jsonComponent.type],
           {
             ...jsonComponent.props,
+            style: compStyles[compID] != undefined ? {
+              ...jsonComponent.props.style,
+              ...{
+                width: compStyles[compID].width,
+                height: compStyles[compID].height,
+                flex: undefined,
+              },
+            } : {...jsonComponent.props.style},
             key: compID,
             onLayout:(e) => {
             compStyles[compID] = e.nativeEvent.layout;
@@ -166,8 +182,6 @@ export default function Main() {
                   ...{
                     width: compStyles[compID].width,
                     height: compStyles[compID].height,
-                    top: -200,
-                    left: 0,
                     flex: undefined,
                   },
                 },
@@ -199,6 +213,14 @@ export default function Main() {
         {
           ...jsonComponent.props,
           key: compID,
+          style: compStyles[compID] != undefined ? {
+            ...jsonComponent.props.style,
+            ...{
+              width: compStyles[compID].width,
+              height: compStyles[compID].height,
+              flex: undefined,
+            },
+          } : {...jsonComponent.props.style},
           onLayout:(e) => {
             compStyles[compID] = e.nativeEvent.layout;
             setCompStyles({ ...compStyles });

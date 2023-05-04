@@ -25,7 +25,6 @@ export default function Main() {
 
   useEffect(() => {
     try { 
-      console.log(compStyles)
       updateEmulator(componentJson);
     } catch {
       console.log("no usable json");
@@ -106,16 +105,19 @@ export default function Main() {
               ...{
                 width: compStyles[compID].width,
                 height: compStyles[compID].height,
-                top: 0,
-                left: 0,
+                position: 'absolute',
+                left: compStyles[compID].x,
+                top: compStyles[compID].y,
                 flex: undefined,
               },
             } : {...jsonComponent.props.style},
             key: compID,
             onLayout:(e) => {
-              compStyles[compID] = e.nativeEvent.layout;
-  
-              setCompStyles({ ...compStyles });
+              if (compStyles[compID] == undefined) {
+
+                compStyles[compID] = e.nativeEvent.layout;
+                setCompStyles({ ...compStyles });
+              }
             }
           })
       );
@@ -154,14 +156,19 @@ export default function Main() {
               ...{
                 width: compStyles[compID].width,
                 height: compStyles[compID].height,
+                position: 'absolute',
+                left: compStyles[compID].x,
+                top: compStyles[compID].y,
                 flex: undefined,
               },
             } : {...jsonComponent.props.style},
             key: compID,
             onLayout:(e) => {
-            compStyles[compID] = e.nativeEvent.layout;
+              if (compStyles[compID] == undefined) {
 
-            setCompStyles({ ...compStyles });
+                compStyles[compID] = e.nativeEvent.layout;
+                setCompStyles({ ...compStyles });
+              }
           }
           },
           jsonComponent.children
@@ -218,12 +225,18 @@ export default function Main() {
             ...{
               width: compStyles[compID].width,
               height: compStyles[compID].height,
+              position: 'absolute',
+              left: compStyles[compID].x,
+              top: compStyles[compID].y,
               flex: undefined,
             },
           } : {...jsonComponent.props.style},
           onLayout:(e) => {
-            compStyles[compID] = e.nativeEvent.layout;
-            setCompStyles({ ...compStyles });
+            if (compStyles[compID] == undefined) {
+
+              compStyles[compID] = e.nativeEvent.layout;
+              setCompStyles({ ...compStyles });
+            }
           }
         },
         childrenComponent

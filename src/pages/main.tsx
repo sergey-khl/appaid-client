@@ -277,9 +277,11 @@ export default function Main() {
     return [parentComponent, parentTree, parentGui];
   };
 
-  const updateCompStyles = (width: number, height: number) => {
+  const updateCompStyles = (width: number, height: number, left: number, top: number) => {
     compStyles[selected].width = width;
     compStyles[selected].height = height;
+    compStyles[selected].x = left;
+    compStyles[selected].y = top;
     setCompStyles(compStyles);
     console.log(compStyles);
   }

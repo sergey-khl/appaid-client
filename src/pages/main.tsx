@@ -1,4 +1,5 @@
 import React, { FC, useState, createElement, useEffect, useRef } from "react";
+import * as ReactDOM from 'react-dom'
 import * as Components from "react-native";
 import Emulator from "../components/emulator";
 import GenComponent from "../components/gen-component";
@@ -20,8 +21,11 @@ export default function Main() {
   const [tree, setTree] = useState(
     createElement(TreeNode, { name: "tree" }, null)
   );
+  const [compRefs, setCompRefs] = useState({});
   const [compStyles, setCompStyles] = useState({});
-  const [selected, setSelected] = useState('root')
+  const [selected, setSelected] = useState('root');
+
+  const testRef = useRef(null);
 
   useEffect(() => {
     try { 
@@ -58,7 +62,7 @@ export default function Main() {
     const reactComponent = (
       <View
         onLayout={(e) => {
-          compStyles[compID] = e.nativeEvent.layout;
+          compStyles[compID] = {...window.getComputedStyle(ReactDOM.findDOMNode(compRefs[compID]))};
           setCompStyles({ ...compStyles });
         }}
         style={{
@@ -66,6 +70,7 @@ export default function Main() {
           height: "100%"
         }}
         key={compID}
+        ref={node=>compRefs[compID] = node}
       >
         {comp}
       </View>
@@ -107,19 +112,17 @@ export default function Main() {
               ...{
                 width: compStyles[compID].width,
                 height: compStyles[compID].height,
-                position: 'absolute',
                 left: compStyles[compID].x,
                 top: compStyles[compID].y,
+                position: 'absolute',
                 flex: undefined,
               },
             } : {...jsonComponent.props.style},
             key: compID,
+            ref: node => compRefs[compID] = node,
             onLayout:(e) => {
-              if (compStyles[compID] == undefined) {
-
-                compStyles[compID] = e.nativeEvent.layout;
-                setCompStyles({ ...compStyles });
-              }
+              compStyles[compID] = Object.assign({}, window.getComputedStyle(ReactDOM.findDOMNode(compRefs[compID])));
+              setCompStyles({ ...compStyles });
             }
           })
       );
@@ -166,13 +169,11 @@ export default function Main() {
               },
             } : {...jsonComponent.props.style},
             key: compID,
+            ref: node => compRefs[compID] = node,
             onLayout:(e) => {
-              if (compStyles[compID] == undefined) {
-
-                compStyles[compID] = e.nativeEvent.layout;
-                setCompStyles({ ...compStyles });
-              }
-          }
+              compStyles[compID] = Object.assign({}, window.getComputedStyle(ReactDOM.findDOMNode(compRefs[compID])));
+              setCompStyles({ ...compStyles });
+            }
           },
           jsonComponent.children
         )
@@ -218,6 +219,7 @@ export default function Main() {
     });
     let parentComponent: React.ReactElement;
 
+
     parentComponent = (
       createElement(
         Components[jsonComponent.type],
@@ -235,12 +237,10 @@ export default function Main() {
               flex: undefined,
             },
           } : {...jsonComponent.props.style},
+          ref:(node) => compRefs[compID] = node,
           onLayout:(e) => {
-            if (compStyles[compID] == undefined) {
-
-              compStyles[compID] = e.nativeEvent.layout;
-              setCompStyles({ ...compStyles });
-            }
+            compStyles[compID] = Object.assign({}, window.getComputedStyle(ReactDOM.findDOMNode(compRefs[compID])));
+            setCompStyles({ ...compStyles });
           }
         },
         childrenComponent
@@ -273,7 +273,7 @@ export default function Main() {
                 },
               },
               pointerEvents:'box-none', 
-              key: compID,
+              key: compID
             },
             childrenGui)
         }
@@ -283,9 +283,11 @@ export default function Main() {
     return [parentComponent, parentTree, parentGui];
   };
 
-  const updateCompStyles = (width: number, height: number) => {
+  const updateCompStyles = (width: number, height: number, left: number, top: number) => {
     compStyles[selected].width = width;
     compStyles[selected].height = height;
+    compStyles[selected].x = left;
+    compStyles[selected].y = top;
     setCompStyles(compStyles);
     console.log(compStyles);
   }

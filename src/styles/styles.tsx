@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-export const editWidth = 2;
+export const editWidth = 1;
 export const phoneWidth = 0;
 
 export default StyleSheet.create({

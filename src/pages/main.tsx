@@ -26,7 +26,8 @@ export default function Main() {
   useEffect(() => {
     try { 
       updateEmulator(componentJson);
-    } catch {
+    } catch (e) {
+      console.log(e)
       console.log("no usable json");
     }
   }, [compStyles, componentJson, selected]);
@@ -94,9 +95,10 @@ export default function Main() {
     jsonComponent: any | any[],
     parentID: string
   ): [React.ReactElement, React.ReactElement, React.ReactElement] => {
+    console.log(jsonComponent)
     const compID = jsonComponent.uid;
     // TODO: fix bahemothon
-    if (jsonComponent.children.length == 0) {
+    if (!jsonComponent.hasOwnProperty('children') || jsonComponent.children.length == 0) {
       const parentComponent: React.ReactElement = (
           createElement(Components[jsonComponent.type], {
             ...jsonComponent.props,
@@ -140,6 +142,7 @@ export default function Main() {
                   },
                 },
                 key: compID,
+                pointerEvents:'box-none'
               })
           }
         </Selector>
@@ -193,6 +196,7 @@ export default function Main() {
                   },
                 },
                 key: compID,
+                pointerEvents:'box-none',
               },
               jsonComponent.children)
           }
@@ -255,7 +259,8 @@ export default function Main() {
     let parentGui = (
       compStyles[compID]!= undefined &&
       <Selector compStyles={compStyles} key={compID} uid={compID} selected={selected} setSelected={()=>{setSelected(compID)}}>
-            {createElement(View, {
+            {createElement(View,
+              {
               ...jsonComponent.props,
               style: {
                 ...jsonComponent.props.style,
@@ -267,6 +272,7 @@ export default function Main() {
                   flex: undefined,
                 },
               },
+              pointerEvents:'box-none', 
               key: compID,
             },
             childrenGui)
@@ -277,11 +283,9 @@ export default function Main() {
     return [parentComponent, parentTree, parentGui];
   };
 
-  const updateCompStyles = (width: number, height: number, left: number, top: number) => {
+  const updateCompStyles = (width: number, height: number) => {
     compStyles[selected].width = width;
     compStyles[selected].height = height;
-    compStyles[selected].x = left;
-    compStyles[selected].y = top;
     setCompStyles(compStyles);
     console.log(compStyles);
   }

@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-export const editWidth = 1;
+export const editWidth = 20;
 export const phoneWidth = 0;
 
 export default StyleSheet.create({
@@ -40,6 +40,7 @@ export default StyleSheet.create({
         
     },
     selector: {
+        padding: 20,
         borderWidth: editWidth,
         borderColor: "blue",
     },

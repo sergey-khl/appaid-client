@@ -56,7 +56,7 @@ export default function Main() {
   const updateEmulator = (component: any): void => {
     // gotta change prob to make more general
     const compID = "root";
-    const [comp, accordion, editMode] = parseComponent(component.jsx, compID);
+    const [comp, accordion, editMode] = parseComponent(component, compID);
     //const comp = <TouchableOpacity style={{"backgroundColor": "black", width: 50, height: 50}} onPress={()=>{console.log('fdsasdf')}}></TouchableOpacity>
     //const reactComponent = createComponent('View', {style:{justifyContent:"center", alignSelf: 'center', height: '100%', width: '100%'}, key: uuidv4()}, comp);
     const reactComponent = (
@@ -100,8 +100,7 @@ export default function Main() {
     jsonComponent: any | any[],
     parentID: string
   ): [React.ReactElement, React.ReactElement, React.ReactElement] => {
-    console.log(jsonComponent)
-    const compID = jsonComponent.uid;
+    const compID = jsonComponent.uuid;
     // TODO: fix bahemothon
     if (!jsonComponent.hasOwnProperty('children') || jsonComponent.children.length == 0) {
       const parentComponent: React.ReactElement = (
@@ -112,12 +111,12 @@ export default function Main() {
               ...{
                 width: compStyles[compID].width,
                 height: compStyles[compID].height,
-                left: compStyles[compID].x,
-                top: compStyles[compID].y,
-                position: 'absolute',
+                left: compStyles[compID].left,
+                top: compStyles[compID].top,
+                position: 'relative',
                 flex: undefined,
               },
-            } : {...jsonComponent.props.style},
+            } : {...jsonComponent.props.style, position: 'relative'},
             key: compID,
             ref: node => compRefs[compID] = node,
             onLayout:(e) => {
@@ -141,6 +140,10 @@ export default function Main() {
                   ...{
                     width: compStyles[compID].width,
                     height: compStyles[compID].height,
+                    left: 0,
+                    right: 0,
+                    margin: 0,
+                    position: 'absolute',
                     flex: undefined,
                   },
                 },
@@ -162,12 +165,12 @@ export default function Main() {
               ...{
                 width: compStyles[compID].width,
                 height: compStyles[compID].height,
-                position: 'absolute',
-                left: compStyles[compID].x,
-                top: compStyles[compID].y,
+                position: 'relative',
+                left: compStyles[compID].left,
+                top: compStyles[compID].top,
                 flex: undefined,
               },
-            } : {...jsonComponent.props.style},
+            } : {...jsonComponent.props.style, position: 'relative'},
             key: compID,
             ref: node => compRefs[compID] = node,
             onLayout:(e) => {
@@ -193,6 +196,10 @@ export default function Main() {
                   ...{
                     width: compStyles[compID].width,
                     height: compStyles[compID].height,
+                    left: 0,
+                    top: 0,
+                    margin: 0,
+                    position: 'absolute',
                     flex: undefined,
                   },
                 },
@@ -231,12 +238,12 @@ export default function Main() {
             ...{
               width: compStyles[compID].width,
               height: compStyles[compID].height,
-              position: 'absolute',
-              left: compStyles[compID].x,
-              top: compStyles[compID].y,
+              position: 'relative',
+              left: compStyles[compID].left,
+              top: compStyles[compID].top,
               flex: undefined,
             },
-          } : {...jsonComponent.props.style},
+          } : {...jsonComponent.props.style, position: 'relative'},
           ref:(node) => compRefs[compID] = node,
           onLayout:(e) => {
             compStyles[compID] = Object.assign({}, window.getComputedStyle(ReactDOM.findDOMNode(compRefs[compID])));
@@ -267,8 +274,10 @@ export default function Main() {
                 ...{
                   width: compStyles[compID].width,
                   height: compStyles[compID].height,
-                  top: 0,
                   left: 0,
+                  top: 0,
+                  margin: 0,
+                  position: 'absolute',
                   flex: undefined,
                 },
               },

@@ -8,7 +8,6 @@ import TreeNode from "../components/tree-node";
 import ComponentTree from "../components/component-tree";
 import Selector from "../components/selector";
 import Editor from "../components/editor";
-import { checkUntouchable, overlapElement } from "../utils/utils";
 import styles, { editWidth } from '../styles/styles';
 
 export default function Main() {

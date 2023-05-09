@@ -1,17 +1,10 @@
 
-const checkUntouchable = (e) => {
-  e.preventDefault();
-  console.log('touching')
+const getNumber = (convert: string | number) => {
+        if (typeof convert === "number") {
+          return convert;
+        }
+        const valid_style = new RegExp(/\D$/g);
+        return parseFloat(convert.replace(valid_style, ''))
+    }
 
-}
-
-const overlapElement = (ref) => {
-  ref.measure( (fx, fy, width, height, px, py) => {
-    console.log('Component width is: ' + width)
-    console.log('Component height is: ' + height)
-    console.log('X offset to page: ' + px)
-    console.log('Y offset to page: ' + py)
-  })
-}
-
-export {checkUntouchable, overlapElement}
+export {getNumber}

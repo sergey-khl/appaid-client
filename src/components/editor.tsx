@@ -1,5 +1,6 @@
 import React, { FC, useState, useEffect } from "react";
 import { TouchableOpacity, View, TextInput, Text } from "react-native";
+import { getNumber } from "../utils/utils";
 
 interface EditorProps {
   selected: string;
@@ -10,22 +11,22 @@ interface EditorProps {
 const Editor: FC<EditorProps> = (props) => {
   const [width, setWidth] = useState<number>(
     props.compStyles[props.selected]
-      ? props.compStyles[props.selected].width
+      ? getNumber(props.compStyles[props.selected].width)
       : 0
   );
   const [height, setHeight] = useState<number>(
     props.compStyles[props.selected]
-      ? props.compStyles[props.selected].height
+      ? getNumber(props.compStyles[props.selected].height)
       : 0
   );
   const [left, setLeft] = useState<number>(
     props.compStyles[props.selected]
-      ? props.compStyles[props.selected].x
+      ? getNumber(props.compStyles[props.selected].x)
       : 0
   );
   const [top, setTop] = useState<number>(
     props.compStyles[props.selected]
-      ? props.compStyles[props.selected].y
+      ? getNumber(props.compStyles[props.selected].y)
       : 0
   );
    const changeWidth = (w) => {
@@ -52,22 +53,22 @@ const Editor: FC<EditorProps> = (props) => {
   useEffect(() => {
     setWidth(
       props.compStyles[props.selected]
-        ? props.compStyles[props.selected].width
+        ? getNumber(props.compStyles[props.selected].width)
         : 0
     );
     setHeight(
       props.compStyles[props.selected]
-        ? props.compStyles[props.selected].height
+        ? getNumber(props.compStyles[props.selected].height)
         : 0
     );
     setLeft(
       props.compStyles[props.selected]
-        ? props.compStyles[props.selected].x
+        ? getNumber(props.compStyles[props.selected].x)
         : 0
     );
     setTop(
       props.compStyles[props.selected]
-        ? props.compStyles[props.selected].y
+        ? getNumber(props.compStyles[props.selected].y)
         : 0
     );
   }, [props.selected, props.compStyles]);

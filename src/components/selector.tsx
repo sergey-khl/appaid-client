@@ -50,7 +50,11 @@ const Selector: FC<SelectorProps> = (props) => {
     return(
         <TouchableOpacity
             style={props.uid == 'root' ? {width: '100%', height: '100%'} : 
-                [{position:'relative'}, getStyles()]}
+                [{position: 'relative',
+                display: 'flex',
+                flexBasis: 'auto',
+                flexDirection: 'column',
+                flexShrink: 0}, getStyles()]}
           onPress={props.setSelected}
         >
             {props.children}
